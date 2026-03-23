@@ -1,0 +1,78 @@
+name: Fase 2 Sprint Auto Sync
+
+on:
+  push:
+    branches:
+      - "feat/fase2-*"
+      - "fase2/*"
+      - "main"
+      - "master"
+    paths-ignore:
+      - "Fase 2/01_Sprint1/SPRINTS_ESTADO.md"
+  issues:
+    types:
+      - opened
+      - edited
+      - closed
+      - reopened
+      - labeled
+      - unlabeled
+      - milestoned
+      - demilestoned
+  milestone:
+    types:
+      - created
+      - edited
+      - closed
+      - opened
+      - deleted
+  pull_request:
+    types:
+      - opened
+      - edited
+      - closed
+      - reopened
+      - ready_for_review
+  schedule:
+    - cron: "15 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: fase2-sync-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync-sprint-status:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate sprint status
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python scripts/update-sprint-status.py
+
+      - name: Commit auto updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "Fase 2/01_Sprint1/SPRINTS_ESTADO.md"
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(fase2): auto-sync sprint status"
+          git push
