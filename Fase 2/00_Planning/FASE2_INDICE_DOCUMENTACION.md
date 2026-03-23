@@ -2,7 +2,7 @@
 
 **Generado**: 23 de marzo de 2026  
 **Estado**: Listo para Kickoff del equipo  
-**Ubicación**: Raíz del proyecto `/it-asset-manager/`
+**Ubicación**: `Fase 2/00_Planning/`
 
 ---
 

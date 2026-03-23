@@ -60,7 +60,7 @@
 ### 5. Navegación & Índices
 - ✅ **Fase 2/README.md** - Hub central con timing por sección
 - ✅ **Fase 2/00_RESUMEN_ORGANIZACION.md** - Resumen completo de cambios + FAQ
-- ✅ **FASE2_DOCUMENTACION.md** (raíz) - Punto de entrada desde root
+- ✅ **00_Planning/FASE2_DOCUMENTACION.md** - Punto de entrada documental
 
 ---
 

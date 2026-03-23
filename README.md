@@ -1,20 +1,29 @@
-# IT Asset Manager
+﻿# IT Asset Manager
 
 Inventario IT moderno con telemetria segura, backend endurecido y agente Windows instalable.
 
-## Snapshot
+---
 
-- Frontend: React + Vite + Tailwind.
-- Backend: Express + TypeScript.
-- Datos: Firebase Auth + Firestore.
-- Agente: Windows PowerShell (modo instalador) con opcion de distribucion MSI.
+## Plataforma en una mirada
 
-## Que resuelve
+| Componente | Stack | Objetivo |
+|---|---|---|
+| Frontend | React + Vite + Tailwind | Vista unificada de activos y estado operativo |
+| Backend | Express + TypeScript | API segura para registro y heartbeat |
+| Datos | Firebase Auth + Firestore | Identidad, autorizacion y almacenamiento |
+| Agente | PowerShell + MSI (opcional) | Alta automatica y telemetria continua |
 
-- Centraliza activos de IT en una sola vista.
-- Automatiza registro y heartbeat de endpoints.
-- Mejora trazabilidad de activos en operacion.
-- Reduce riesgo de seguridad eliminando control remoto inseguro.
+---
+
+## Por que este proyecto destaca
+
+- Centraliza activos de IT en una sola vista operativa.
+- Automatiza registro de endpoints y heartbeat seguro.
+- Mejora la trazabilidad del ciclo de vida de cada activo.
+- Endurece seguridad eliminando control remoto inseguro.
+- Preparado para escalar a una plataforma ITAM empresarial.
+
+---
 
 ## Seguridad aplicada
 
@@ -25,84 +34,95 @@ Inventario IT moderno con telemetria segura, backend endurecido y agente Windows
 - Cabeceras defensivas y control de origen.
 - Reglas de Firestore sin hardcodes de email para privilegios.
 
-## Arquitectura
+---
+
+## Flujo de arquitectura
 
 1. Usuario inicia sesion con Firebase Auth.
-2. Frontend consume inventario y telemetria desde Firestore.
-3. Agente Windows registra activo en backend.
-4. Backend emite credenciales por activo.
+2. Frontend consulta inventario y telemetria desde Firestore.
+3. Agente Windows registra el activo en backend.
+4. Backend emite credenciales unicas por activo.
 5. Agente envia heartbeat autenticado (CPU, RAM, disco).
+
+---
 
 ## Inicio rapido
 
-1. Instalar dependencias:
+### 1) Instalar dependencias
 
 ```bash
 npm install
 ```
 
-2. Configurar entorno con base en `.env.example`:
+### 2) Configurar variables de entorno (basado en .env.example)
 
-- `APP_URL`
-- `PORT`
-- `AGENT_BOOTSTRAP_TOKEN`
-- `AGENT_HEARTBEAT_INTERVAL_SECONDS`
+- APP_URL
+- PORT
+- AGENT_BOOTSTRAP_TOKEN
+- AGENT_HEARTBEAT_INTERVAL_SECONDS
 
-3. Ejecutar en desarrollo:
+### 3) Levantar en desarrollo
 
 ```bash
 npm run dev
 ```
 
-4. Abrir:
+### 4) Probar
 
-- http://localhost:3000
+- App local: http://localhost:3000
+
+---
 
 ## Scripts disponibles
 
-- `npm run dev`: servidor local (Express + Vite middleware).
-- `npm run lint`: chequeo TypeScript.
-- `npm run test`: pruebas de seguridad backend.
-- `npm run build`: build de produccion frontend.
-- `npm run build:msi`: genera MSI del agente (requiere WiX).
+| Script | Que hace |
+|---|---|
+| npm run dev | Servidor local (Express + Vite middleware) |
+| npm run lint | Chequeo TypeScript |
+| npm run test | Pruebas de seguridad backend |
+| npm run build | Build de produccion frontend |
+| npm run build:msi | Genera MSI del agente (requiere WiX) |
+
+---
 
 ## Agente Windows
 
-Desde la pestaña Agente Seguro puedes descargar:
+Desde la seccion Agente Seguro puedes descargar:
 
-- Instalador PowerShell (`.ps1`).
-- Paquete MSI (cuando este publicado).
+- Instalador PowerShell (.ps1)
+- Paquete MSI (cuando este publicado)
 
 Modos soportados por el instalador:
 
-- `Install`
-- `Run`
-- `Status`
-- `Uninstall`
+- Install
+- Run
+- Status
+- Uninstall
 
 Persistencia y estado local:
 
-- `C:\ProgramData\AssetFlow\agent-state.json`
-- `C:\ProgramData\AssetFlow\agent.log`
-- Tarea programada `AssetFlowSecureAgent`
+- C:\ProgramData\AssetFlow\agent-state.json
+- C:\ProgramData\AssetFlow\agent.log
+- Tarea programada AssetFlowSecureAgent
+
+---
 
 ## MSI y distribucion empresarial
 
-Blueprint incluido para empaquetado:
+Archivos de empaquetado:
 
-- `packaging/msi/AssetFlow.Agent.wxs`
-- `tools/msi/build-agent-msi.ps1`
+- packaging/msi/AssetFlow.Agent.wxs
+- tools/msi/build-agent-msi.ps1
 
 Publicacion recomendada del MSI:
 
-1. Generar artefacto con `npm run build:msi`.
+1. Generar artefacto con npm run build:msi.
 2. Publicar en GitHub Releases.
-3. Configurar `VITE_AGENT_MSI_URL` o servirlo en:
-- `/downloads/AssetFlow-Agent-Installer.msi`
+3. Configurar VITE_AGENT_MSI_URL o servirlo en /downloads/AssetFlow-Agent-Installer.msi.
 
-## Calidad y validacion
+---
 
-Comandos recomendados antes de cada release:
+## Calidad antes de release
 
 ```bash
 npm run lint
@@ -110,7 +130,9 @@ npm run test
 npm run build
 ```
 
-## Roadmap fase 2
+---
+
+## Roadmap Fase 2
 
 Objetivo: evolucionar de inventario seguro a plataforma ITAM empresarial.
 
@@ -123,15 +145,22 @@ Capacidades objetivo:
 - Auditoria de cambios y gobernanza de datos.
 - Dashboards avanzados y busqueda asistida.
 
-Documento de referencia completo:
+Referencias de Fase 2:
 
-- `Fase 2/IMPLEMENTACION_Y_ROADMAP.md`
+- Fase 2/IMPLEMENTACION_Y_ROADMAP.md
+- Fase 2/README.md
 
-## Preparado para GitHub
+---
 
-Checklist minimo:
+## Checklist para GitHub
 
-1. Variables y secretos fuera del repo.
-2. `npm run lint`, `npm run test` y `npm run build` en verde.
-3. README actualizado y guia tecnica en `Fase 2/`.
+1. Variables y secretos fuera del repositorio.
+2. npm run lint, npm run test y npm run build en verde.
+3. Documentacion de Fase 2 revisada y ordenada.
 4. MSI publicado como artefacto versionado.
+
+---
+
+## Estado del proyecto
+
+Proyecto activo, funcional en entorno local y preparado para evolucionar por sprints en Fase 2.

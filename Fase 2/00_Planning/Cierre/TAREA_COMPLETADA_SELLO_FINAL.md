@@ -22,7 +22,7 @@
 - Diagramas: 4 Mermaid (roadmap, épicas, timeline, navegación)
 - Integraciones: 3 docs (Jira, automatización, Copilot)
 - Backlog: preparado para fases posteriores
-- 4 documentos en raíz para navegación (DOCUMENTACION, ENTREGA_FINAL, INICIO_DESARROLLO, DECISIONES_PENDIENTES)
+- 4 documentos de navegación reubicados en `00_Planning/`, `00_Planning/Cierre/` y `01_Sprint1/`
 
 ### 3. Código Implementado ✅
 - T1-01: Multi-tenant types + middleware (65 + 69 líneas)
@@ -40,7 +40,7 @@
 - Total: 18 specs, todos pasando
 
 ### 5. Documentación Generada ✅
-- VALIDACION_FINAL_TAREA_COMPLETADA.md: 268 líneas, checklist completo
+- 00_Planning/Cierre/VALIDACION_FINAL_TAREA_COMPLETADA.md: 268 líneas, checklist completo
 - CODIGO_IMPLEMENTADO.md: 252 líneas, mapeo código ↔ docs
 - FASE2_GUIA_DESARROLLO_SPRINT1.md: 770 líneas, templates copiables
 - FASE2_RESUMEN_TAREAS.md: 331 líneas, matrix Sprint 1
@@ -81,7 +81,7 @@
 
 El usuario debe ejecutar estas acciones:
 
-1. **Decisión de Merge**: Leer FASE2_DECISIONES_PENDIENTES.md sección "Decisión 1"
+1. **Decisión de Merge**: Leer 00_Planning/FASE2_DECISIONES_PENDIENTES.md sección "Decisión 1"
 2. **Decisión de Integración**: Elegir Jira/GitHub option (A/B/C/D) en mismo documento
 3. **Asignación de Tareas**: Spreadsheet de T1-01 a T1-05 en Kickoff 24/03
 4. **Ejecución de Kickoff**: Presentación usando documentación entregada
@@ -103,7 +103,7 @@ npm test
 
 ## SIGUIENTE ACCIÓN PARA USUARIO
 
-1. Leer `FASE2_DECISIONES_PENDIENTES.md` (20 minutos)
+1. Leer `00_Planning/FASE2_DECISIONES_PENDIENTES.md` (20 minutos)
 2. Confirmar opciones de merge e integración
 3. Preparar presentación Kickoff 24/03 usando `FASE2_RESUMEN_EJECUTIVO.md`
 4. Ejecutar Kickoff

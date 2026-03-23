@@ -38,11 +38,11 @@
 - [x] **README.md** (en Fase 2/) - Hub central
 - [x] **00_RESUMEN_ORGANIZACION.md** - Cambios, estructura, FAQ
 
-### Documentación de Entrada (Raíz)
-- [x] **FASE2_DOCUMENTACION.md** - Punto entrada desde root
-- [x] **FASE2_ENTREGA_FINAL.md** - Resumen ejecutivo
-- [x] **FASE2_INICIO_DESARROLLO.md** - Guía para devs
-- [x] **FASE2_DECISIONES_PENDIENTES.md** - 4 decisiones explícitas
+### Documentación de Entrada (Reubicada)
+- [x] **00_Planning/FASE2_DOCUMENTACION.md** - Punto de entrada documental
+- [x] **00_Planning/Cierre/FASE2_ENTREGA_FINAL.md** - Resumen ejecutivo
+- [x] **01_Sprint1/FASE2_INICIO_DESARROLLO.md** - Guía para devs
+- [x] **00_Planning/FASE2_DECISIONES_PENDIENTES.md** - 4 decisiones explícitas
 
 ---
 
@@ -256,7 +256,7 @@
 | Todos | FASE2_START_RAPIDO.md | 5 min |
 | Tech Lead | FASE2_RESUMEN_EJECUTIVO.md | 45 min |
 | Developers | CODIGO_IMPLEMENTADO.md | 15 min |
-| PM | FASE2_DECISIONES_PENDIENTES.md | 20 min |
+| PM | 00_Planning/FASE2_DECISIONES_PENDIENTES.md | 20 min |
 
 ---
 
@@ -265,4 +265,4 @@
 Toda solicitud ha sido ejecutada, documentada, codificada, testeada, y validada.
 El proyecto está listo para que el usuario tome las decisiones finales y proceda con el Kickoff.
 
-**Próxima acción**: Usuario lee FASE2_DECISIONES_PENDIENTES.md y confirma opciones.
+**Próxima acción**: Usuario lee 00_Planning/FASE2_DECISIONES_PENDIENTES.md y confirma opciones.
