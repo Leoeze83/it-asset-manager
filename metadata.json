@@ -1,0 +1,5 @@
+{
+  "name": "IT Asset Manager",
+  "description": "A comprehensive IT asset management system for tracking hardware inventory, assignments, and maintenance status.",
+  "requestFramePermissions": []
+}

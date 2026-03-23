@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isEmailVerified() {
+      return isAuthenticated() && request.auth.token.email_verified == true;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        isEmailVerified() &&
+        (
+          request.auth.token.role == 'Admin' ||
+          (userDoc().exists() && userDoc().data.role == 'Admin')
+        );
+    }
+
+    function validPercent(value) {
+      return value is number && value >= 0 && value <= 100;
+    }
+
+    function validRealtime(data) {
+      return !(data is map) || (
+        data.keys().hasOnly(['cpu', 'ram', 'disk']) &&
+        (!('cpu' in data) || validPercent(data.cpu)) &&
+        (!('ram' in data) || validPercent(data.ram)) &&
+        (!('disk' in data) || validPercent(data.disk))
+      );
+    }
+
+    function isValidAsset(data) {
+      return data.keys().hasOnly([
+               'name',
+               'type',
+               'serialNumber',
+               'status',
+               'assignedTo',
+               'location',
+               'purchaseDate',
+               'specs',
+               'createdAt',
+               'updatedAt',
+               'lastSeen',
+               'realtime',
+               'agentEnabled',
+               'agentVersion'
+             ]) &&
+             data.keys().hasAll(['name', 'type', 'serialNumber', 'status', 'createdAt', 'updatedAt']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.type in ['Laptop', 'Desktop', 'Server', 'Monitor', 'Printer', 'Other'] &&
+             data.serialNumber is string && data.serialNumber.size() > 0 && data.serialNumber.size() <= 64 &&
+             data.status in ['Active', 'Maintenance', 'Retired', 'In Storage'] &&
+             (!('assignedTo' in data) || data.assignedTo is string) &&
+             (!('location' in data) || (data.location is string && data.location.size() <= 100)) &&
+             (!('purchaseDate' in data) || data.purchaseDate is string) &&
+             (!('specs' in data) || (data.specs is string && data.specs.size() <= 500)) &&
+             (!('agentEnabled' in data) || data.agentEnabled is bool) &&
+             (!('agentVersion' in data) || (data.agentVersion is string && data.agentVersion.size() <= 32)) &&
+             (!('lastSeen' in data) || data.lastSeen is timestamp) &&
+             (!('realtime' in data) || validRealtime(data.realtime)) &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasOnly(['name', 'email', 'department', 'role', 'photoURL']) &&
+             data.keys().hasAll(['name', 'email', 'role']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.email is string && data.email.size() > 3 && data.email.size() <= 254 &&
+             data.role in ['Admin', 'Staff'] &&
+             (!('department' in data) || (data.department is string && data.department.size() <= 100)) &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 500));
+    }
+
+    function isValidLog(data, assetId) {
+      return data.keys().hasOnly(['assetId', 'date', 'description', 'performedBy']) &&
+             data.keys().hasAll(['assetId', 'date', 'description', 'performedBy']) &&
+             data.assetId == assetId &&
+             data.date is timestamp &&
+             data.description is string && data.description.size() > 0 && data.description.size() <= 500 &&
+             data.performedBy == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) &&
+                    isValidUser(request.resource.data) &&
+                    request.resource.data.role == 'Staff';
+      allow update: if isValidUser(request.resource.data) && (
+                      (isOwner(userId) && request.resource.data.role == resource.data.role) ||
+                      isAdmin()
+                    );
+      allow delete: if isAdmin();
+    }
+
+    match /assets/{assetId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin() && isValidAsset(request.resource.data);
+
+      match /logs/{logId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && isValidLog(request.resource.data, assetId);
+      }
+    }
+
+    match /agentCredentials/{assetId} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "Asset": {
+      "title": "Asset",
+      "description": "An IT hardware asset",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["Laptop", "Desktop", "Server", "Monitor", "Printer", "Other"] },
+        "serialNumber": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Maintenance", "Retired", "In Storage"] },
+        "assignedTo": { "type": "string", "description": "User ID of the assigned employee" },
+        "location": { "type": "string" },
+        "purchaseDate": { "type": "string", "format": "date" },
+        "specs": { "type": "string", "description": "JSON string of technical specifications" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "type", "serialNumber", "status"]
+    },
+    "User": {
+      "title": "User",
+      "description": "An employee or IT staff member",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "department": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "Staff"] },
+        "photoURL": { "type": "string" }
+      },
+      "required": ["name", "email"]
+    },
+    "MaintenanceLog": {
+      "title": "Maintenance Log",
+      "description": "A record of maintenance performed on an asset",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "assetId": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "description": { "type": "string" },
+        "performedBy": { "type": "string", "description": "User ID of the staff member" }
+      },
+      "required": ["assetId", "date", "description", "performedBy"]
+    }
+  },
+  "firestore": {
+    "/assets/{assetId}": {
+      "schema": "Asset",
+      "description": "Collection of IT assets"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of users"
+    },
+    "/assets/{assetId}/logs/{logId}": {
+      "schema": "MaintenanceLog",
+      "description": "Maintenance history for a specific asset"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+Summary,Issue Type,Description,Priority,Labels,Epic Name,Epic Link,Story Points,Sprint
+"EPIC-01 Discovery sin agente",Epic,"Descubrimiento de activos por red y onboarding de detectados.",High,"fase2,discovery","EPIC-01 Discovery sin agente",,,
+"EPIC-02 Integraciones MDM/Cloud",Epic,"Integraciones con Intune, Azure y framework extensible de conectores.",High,"fase2,integraciones","EPIC-02 Integraciones MDM/Cloud",,,
+"EPIC-03 Software y licencias",Epic,"Inventario de software y compliance de licenciamiento.",Medium,"fase2,licencias","EPIC-03 Software y licencias",,,
+"EPIC-04 Lifecycle automation",Epic,"Automatizacion del ciclo de vida de activos.",Medium,"fase2,lifecycle","EPIC-04 Lifecycle automation",,,
+"EPIC-05 Auditoria y governance",Epic,"Trazabilidad, calidad de datos y politicas por tenant.",Medium,"fase2,governance","EPIC-05 Auditoria y governance",,,
+"EPIC-06 Dashboards avanzados",Epic,"Analitica, busqueda avanzada y reportes programados.",Medium,"fase2,analytics","EPIC-06 Dashboards avanzados",,,
+"EPIC-07 SaaS multi-tenant",Epic,"Aislamiento multi-tenant, RBAC y provisioning SaaS.",Highest,"fase2,saas","EPIC-07 SaaS multi-tenant",,,
+"E07-H01 Aislamiento multi-tenant",Story,"Implementar tenantId obligatorio en entidades y filtros API.",Highest,"fase2,saas,backend",,"EPIC-07 SaaS multi-tenant",8,"Fase2-Sprint1"
+"E07-H02 RBAC por tenant",Story,"Roles Owner/Admin/Analyst/ReadOnly con enforcement en endpoints.",Highest,"fase2,saas,security",,"EPIC-07 SaaS multi-tenant",5,"Fase2-Sprint1"
+"E07-H03 Provisioning tenant",Story,"Alta automatica de tenant y usuario owner con configuracion inicial.",High,"fase2,saas",,"EPIC-07 SaaS multi-tenant",5,"Fase2-Sprint2"
+"E01-H01 Scan por CIDR",Story,"Escaneo por rango/subred para deteccion inicial de activos.",High,"fase2,discovery",,"EPIC-01 Discovery sin agente",8,"Fase2-Sprint1"
+"E01-H02 Lista de detectados",Story,"Vista de activos descubiertos con filtros y accion de onboarding.",High,"fase2,discovery,frontend",,"EPIC-01 Discovery sin agente",5,"Fase2-Sprint1"
+"E01-H03 Scheduler discovery",Story,"Programacion periodica de escaneos y registro de ejecuciones.",High,"fase2,discovery",,"EPIC-01 Discovery sin agente",3,"Fase2-Sprint2"
+"E02-H01 Conector Intune",Story,"Sincronizacion incremental de dispositivos desde Intune.",High,"fase2,integraciones",,"EPIC-02 Integraciones MDM/Cloud",8,"Fase2-Sprint3"
+"E02-H02 Conector Azure AD",Story,"Importacion de metadatos de equipos/usuarios desde Entra ID.",High,"fase2,integraciones",,"EPIC-02 Integraciones MDM/Cloud",5,"Fase2-Sprint3"
+"E02-H03 Framework de conectores",Story,"Contrato comun de conectores con retries y telemetria.",Medium,"fase2,integraciones,plataforma",,"EPIC-02 Integraciones MDM/Cloud",5,"Fase2-Sprint4"
+"E03-H01 Inventario software",Story,"Captura software instalado por endpoint y versionado.",Medium,"fase2,licencias",,"EPIC-03 Software y licencias",5,"Fase2-Sprint5"
+"E03-H02 Catalogo licencias",Story,"Modelo de contratos/licencias con asignacion y expiracion.",Medium,"fase2,licencias",,"EPIC-03 Software y licencias",5,"Fase2-Sprint5"
+"E03-H03 Reporte compliance",Story,"Reporte compliant/non-compliant exportable.",Medium,"fase2,licencias,reporting",,"EPIC-03 Software y licencias",3,"Fase2-Sprint6"
+"E04-H01 Estados lifecycle",Story,"Transiciones de estado con reglas y auditoria de cambios.",Medium,"fase2,lifecycle",,"EPIC-04 Lifecycle automation",5,"Fase2-Sprint5"
+"E04-H02 Renovaciones y garantias",Story,"Alertas de vencimientos de contratos y warranties.",Medium,"fase2,lifecycle",,"EPIC-04 Lifecycle automation",3,"Fase2-Sprint6"
+"E04-H03 Onboarding/offboarding",Story,"Checklists operativos para asignacion y devolucion de activos.",Medium,"fase2,lifecycle,workflow",,"EPIC-04 Lifecycle automation",3,"Fase2-Sprint6"
+"E05-H01 Bitacora inmutable",Story,"Registro append-only para eventos criticos con filtros de auditoria.",Medium,"fase2,governance,security",,"EPIC-05 Auditoria y governance",5,"Fase2-Sprint6"
+"E05-H02 Normalizacion de datos",Story,"Reglas de normalizacion y score de calidad por activo.",Medium,"fase2,governance,data-quality",,"EPIC-05 Auditoria y governance",5,"Fase2-Sprint7"
+"E05-H03 Politicas por tenant",Story,"Campos obligatorios y validaciones configurables por tenant.",Medium,"fase2,governance,saas",,"EPIC-05 Auditoria y governance",3,"Fase2-Sprint7"
+"E06-H01 Dashboard ejecutivo",Story,"KPI de cobertura, riesgo y cumplimiento por rol.",Medium,"fase2,analytics",,"EPIC-06 Dashboards avanzados",5,"Fase2-Sprint7"
+"E06-H02 Busqueda avanzada",Story,"Filtros compuestos, vistas guardadas y performance p95.",Medium,"fase2,analytics,search",,"EPIC-06 Dashboards avanzados",5,"Fase2-Sprint8"
+"E06-H03 Reportes programados",Story,"Envio periodico de reportes con trazabilidad de entrega.",Medium,"fase2,analytics,reporting",,"EPIC-06 Dashboards avanzados",3,"Fase2-Sprint8"
+"S1-BE-01 tenantId entidades",Task,"Agregar tenantId obligatorio en assets/users/logs/discoveredAssets.",Highest,"fase2,sprint1,backend",,"EPIC-07 SaaS multi-tenant",3,"Fase2-Sprint1"
+"S1-BE-02 middleware tenant",Task,"Contexto tenant en API con validacion y logging.",Highest,"fase2,sprint1,backend",,"EPIC-07 SaaS multi-tenant",2,"Fase2-Sprint1"
+"S1-BE-03 RBAC enforcement",Task,"Aplicar permisos por rol en endpoints principales.",Highest,"fase2,sprint1,backend,security",,"EPIC-07 SaaS multi-tenant",3,"Fase2-Sprint1"
+"S1-FE-01 contexto tenant",Task,"Estado global de tenant y propagacion en requests.",High,"fase2,sprint1,frontend",,"EPIC-07 SaaS multi-tenant",2,"Fase2-Sprint1"
+"S1-FE-02 vista detectados",Task,"Construir tabla de discovered assets con filtros.",High,"fase2,sprint1,frontend",,"EPIC-01 Discovery sin agente",3,"Fase2-Sprint1"
+"S1-QA-01 pruebas aislamiento",Task,"Casos E2E y negativos de acceso cross-tenant.",High,"fase2,sprint1,qa",,"EPIC-07 SaaS multi-tenant",2,"Fase2-Sprint1"
+"S1-DO-01 observabilidad base",Task,"requestId + tenantId en logs y dashboard inicial de errores.",High,"fase2,sprint1,devops",,"EPIC-07 SaaS multi-tenant",2,"Fase2-Sprint1"
