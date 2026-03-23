@@ -920,6 +920,8 @@ function AgentPage() {
   const [packageMessage, setPackageMessage] = useState<string | null>(null);
   const msiPackageUrl = (import.meta.env.VITE_AGENT_MSI_URL as string | undefined)
     || '/downloads/AssetFlow-Agent-Installer.msi';
+  const uninstallMsiPackageUrl = (import.meta.env.VITE_AGENT_UNINSTALL_MSI_URL as string | undefined)
+    || '/downloads/AssetFlow-Agent-Uninstaller.msi';
 
   const agentScript = `
 param(
@@ -1128,15 +1130,44 @@ function Show-AgentStatus {
 function Uninstall-Agent {
   Assert-Administrator
 
-  if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
-    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+  $taskNames = @(
+    $taskName,
+    "AssetFlowAgent",
+    "AssetFlowSecureAgentLegacy"
+  )
+
+  foreach ($name in $taskNames) {
+    $task = Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue
+    if ($task) {
+      try {
+        Stop-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue
+      } catch {
+      }
+      Unregister-ScheduledTask -TaskName $name -Confirm:$false -ErrorAction SilentlyContinue
+    }
   }
 
-  if (Test-Path $installRoot) {
-    Remove-Item $installRoot -Recurse -Force -ErrorAction SilentlyContinue
+  $pathsToRemove = @(
+    $installRoot,
+    (Join-Path $env:ProgramFiles "AssetFlowAgent"),
+    (Join-Path ([Environment]::GetFolderPath("ProgramFilesX86")) "AssetFlowAgent"),
+    (Join-Path $env:ProgramData "AssetFlow"),
+    (Join-Path $env:ProgramData "AssetFlowAgent"),
+    (Join-Path $env:ProgramData "Microsoft\Windows\Start Menu\Programs\AssetFlow"),
+    (Join-Path $env:LocalAppData "AssetFlow"),
+    (Join-Path $env:AppData "AssetFlow")
+  )
+
+  foreach ($path in $pathsToRemove) {
+    if (-not [string]::IsNullOrWhiteSpace($path) -and (Test-Path $path)) {
+      Remove-Item $path -Recurse -Force -ErrorAction SilentlyContinue
+    }
   }
 
-  Write-Host "Agent uninstalled."
+  Remove-Item -Path "HKLM:\SOFTWARE\\AssetFlow" -Recurse -Force -ErrorAction SilentlyContinue
+  Remove-Item -Path "HKLM:\SOFTWARE\\WOW6432Node\\AssetFlow" -Recurse -Force -ErrorAction SilentlyContinue
+
+  Write-Host "Agent and local traces removed."
 }
 
 switch ($Mode) {
@@ -1176,6 +1207,25 @@ switch ($Mode) {
     }
   };
 
+  const downloadUninstallMsiPackage = async () => {
+    setPackageMessage(null);
+
+    try {
+      const response = await fetch(uninstallMsiPackageUrl, { method: 'HEAD' });
+      if (!response.ok) {
+        setPackageMessage('El MSI desinstalador aun no esta publicado. Genera el paquete y publicalo en /downloads.');
+        return;
+      }
+
+      const a = document.createElement('a');
+      a.href = uninstallMsiPackageUrl;
+      a.download = 'AssetFlow-Agent-Uninstaller.msi';
+      a.click();
+    } catch {
+      setPackageMessage('No fue posible descargar el MSI desinstalador. Verifica conectividad o VITE_AGENT_UNINSTALL_MSI_URL.');
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <div className="text-center space-y-4">
@@ -1211,6 +1261,10 @@ switch ($Mode) {
               <Download size={18} />
               Descargar Paquete MSI
             </Button>
+            <Button onClick={downloadUninstallMsiPackage} variant="danger" className="w-full gap-2 h-12">
+              <Download size={18} />
+              Descargar MSI Desinstalador
+            </Button>
             {packageMessage && (
               <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" role="status">
                 {packageMessage}
@@ -1237,6 +1291,7 @@ switch ($Mode) {
               <li>Consulta estado: <code className="bg-zinc-100 px-1 rounded">.\assetflow-agent.ps1 -Mode Status</code></li>
               <li>Desinstala limpio: <code className="bg-zinc-100 px-1 rounded">.\assetflow-agent.ps1 -Mode Uninstall</code></li>
               <li>Publica el MSI en <code className="bg-zinc-100 px-1 rounded">/downloads/AssetFlow-Agent-Installer.msi</code> o define <code className="bg-zinc-100 px-1 rounded">VITE_AGENT_MSI_URL</code>.</li>
+              <li>Publica el MSI desinstalador en <code className="bg-zinc-100 px-1 rounded">/downloads/AssetFlow-Agent-Uninstaller.msi</code> o define <code className="bg-zinc-100 px-1 rounded">VITE_AGENT_UNINSTALL_MSI_URL</code>.</li>
               <li>Usa <code className="bg-zinc-100 px-1 rounded">AGENT_BOOTSTRAP_TOKEN</code> por canal interno y rotalo si sospechas exposicion.</li>
             </ul>
           </div>

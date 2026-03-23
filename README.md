@@ -91,6 +91,7 @@ Desde la seccion Agente Seguro puedes descargar:
 
 - Instalador PowerShell (.ps1)
 - Paquete MSI (cuando este publicado)
+- MSI desinstalador con limpieza total de rastros
 
 Modos soportados por el instalador:
 
@@ -119,6 +120,7 @@ Publicacion recomendada del MSI:
 1. Generar artefacto con npm run build:msi.
 2. Publicar en GitHub Releases.
 3. Configurar VITE_AGENT_MSI_URL o servirlo en /downloads/AssetFlow-Agent-Installer.msi.
+4. Configurar VITE_AGENT_UNINSTALL_MSI_URL o servirlo en /downloads/AssetFlow-Agent-Uninstaller.msi.
 
 ---
 

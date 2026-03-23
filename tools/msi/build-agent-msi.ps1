@@ -7,6 +7,7 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "../..")
 $wxsPath = Join-Path $repoRoot "packaging/msi/AssetFlow.Agent.wxs"
+$cleanupWxsPath = Join-Path $repoRoot "packaging/msi/AssetFlow.Agent.Cleanup.wxs"
 $outputDir = Join-Path $repoRoot "dist/msi"
 
 if (-not (Get-Command wix -ErrorAction SilentlyContinue)) {
@@ -21,6 +22,8 @@ Push-Location $outputDir
 try {
   wix build $wxsPath -define Version=$Version -o "AssetFlow-Agent-Installer.msi"
   Write-Host "MSI generado en: $outputDir/AssetFlow-Agent-Installer.msi"
+  wix build $cleanupWxsPath -define Version=$Version -o "AssetFlow-Agent-Uninstaller.msi"
+  Write-Host "MSI generado en: $outputDir/AssetFlow-Agent-Uninstaller.msi"
 } finally {
   Pop-Location
 }
