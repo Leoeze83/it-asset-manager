@@ -130,7 +130,7 @@ export class ConnectorFactory {
     if (!ConnectorClass) {
       throw new Error(`Unknown connector type: ${type}`);
     }
-    return new ConnectorClass(tenantId, config);
+      return new (ConnectorClass as any)(tenantId, config);
   }
 }
 
