@@ -20,7 +20,7 @@ import {
   RefreshCw,
   ExternalLink
 } from 'lucide-react';
-import { auth, onAuthStateChanged, signInWithRedirect, GoogleAuthProvider, signOut } from './firebaseAuth';
+import { auth, onAuthStateChanged, signInWithPopup, signInWithRedirect, GoogleAuthProvider, signOut } from './firebaseAuth';
 import { Asset, User, AssetType, AssetStatus } from './types';
 import { format } from 'date-fns';
 import { clsx, type ClassValue } from 'clsx';
@@ -327,11 +327,26 @@ export default function App() {
 
   const handleLogin = async () => {
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
     setLoginError(null);
     try {
-      await signInWithRedirect(auth, provider);
+      await signInWithPopup(auth, provider);
     } catch (error) {
       const authError = error as { code?: string; message?: string };
+      if (authError.code === 'auth/popup-blocked' || authError.code === 'auth/cancelled-popup-request') {
+        try {
+          await signInWithRedirect(auth, provider);
+          return;
+        } catch (redirectError) {
+          const redirectAuthError = redirectError as { code?: string; message?: string };
+          const redirectCode = redirectAuthError.code ?? 'auth/unknown';
+          const redirectMessage = redirectAuthError.message ?? 'Unknown authentication error';
+          console.error('Redirect login error:', { code: redirectCode, message: redirectMessage, error: redirectError });
+          setLoginError(`No se pudo iniciar sesion (${redirectCode}).`);
+          return;
+        }
+      }
+
       const code = authError.code ?? 'auth/unknown';
       const message = authError.message ?? 'Unknown authentication error';
       console.error('Login error:', { code, message, error });
