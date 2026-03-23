@@ -1,52 +1,95 @@
-﻿# IT Asset Manager
+﻿<p align="center">
+	<img src="https://capsule-render.vercel.app/api?type=waving&height=220&color=0:0f172a,50:0ea5e9,100:10b981&text=IT%20Asset%20Manager&fontColor=ffffff&fontAlignY=38&desc=Secure%20ITAM%20Platform%20for%20Modern%20Teams&descAlignY=58&descSize=20" alt="IT Asset Manager banner" />
+</p>
 
-Inventario IT moderno con telemetria segura, backend endurecido y agente Windows instalable.
+<p align="center">
+	<img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white">
+	<img alt="Vite" src="https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white">
+	<img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white">
+	<img alt="Firebase" src="https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?logo=firebase&logoColor=black">
+	<img alt="Windows Agent" src="https://img.shields.io/badge/Windows%20Agent-MSI%20Ready-0078D4?logo=windows&logoColor=white">
+	<img alt="Security" src="https://img.shields.io/badge/Security-Hardened-16a34a">
+</p>
+
+<p align="center">
+	<b>Inventario IT empresarial con telemetria segura, despliegue rapido y control operativo real.</b>
+</p>
 
 ---
 
-## Plataforma en una mirada
+## Resumen ejecutivo
 
-| Componente | Stack | Objetivo |
+IT Asset Manager permite a equipos de TI tener visibilidad, trazabilidad y control sobre endpoints, sin riesgos de control remoto inseguro.
+
+Esta plataforma esta pensada para empresas que necesitan:
+
+- Reducir tiempo de auditorias y levantamiento de inventario.
+- Mejorar cumplimiento y gobernanza de activos.
+- Escalar operaciones ITAM con una arquitectura lista para integraciones.
+
+---
+
+## Por que compradores eligen esta solucion
+
+| Diferencial | Impacto de negocio |
+|---|---|
+| Seguridad por diseno | Elimina vectores criticos: sin comandos remotos, sin websocket de control, sin captura de pantalla |
+| Telemetria accionable | Estado de CPU, RAM y disco con heartbeat autenticado |
+| Operacion enterprise | Agente Windows distribuible por MSI para despliegue centralizado |
+| Baja friccion | UI moderna para operaciones diarias de inventario |
+| Escalabilidad | Base preparada para Discovery, compliance, lifecycle y conectores cloud |
+
+---
+
+## Vista de producto
+
+| Modulo | Stack | Valor operativo |
 |---|---|---|
-| Frontend | React + Vite + Tailwind | Vista unificada de activos y estado operativo |
-| Backend | Express + TypeScript | API segura para registro y heartbeat |
-| Datos | Firebase Auth + Firestore | Identidad, autorizacion y almacenamiento |
-| Agente | PowerShell + MSI (opcional) | Alta automatica y telemetria continua |
+| Frontend | React + Vite + Tailwind | Vista unificada de inventario, estado y administracion |
+| Backend | Express + TypeScript | Endpoints seguros para registro y heartbeat |
+| Datos | Firebase Auth + Firestore | Identidad, autorizacion y almacenamiento gestionado |
+| Agente | PowerShell + MSI | Registro automatizado y telemetria continua |
 
 ---
 
-## Por que este proyecto destaca
+## Seguridad de nivel empresarial
 
-- Centraliza activos de IT en una sola vista operativa.
-- Automatiza registro de endpoints y heartbeat seguro.
-- Mejora la trazabilidad del ciclo de vida de cada activo.
-- Endurece seguridad eliminando control remoto inseguro.
-- Preparado para escalar a una plataforma ITAM empresarial.
-
----
-
-## Seguridad aplicada
-
-- Eliminacion de control remoto por WebSocket y ejecucion arbitraria.
-- Registro de agente protegido por token de bootstrap.
-- Credenciales por activo con rotacion por reinscripcion.
-- Validacion de payloads, limite de body y rate limiting.
-- Cabeceras defensivas y control de origen.
+- Registro protegido con `AGENT_BOOTSTRAP_TOKEN`.
+- Credenciales por activo con rotacion por reinstalacion.
+- Heartbeat autenticado con `x-agent-id` y `x-agent-key`.
+- Validacion de payloads + rate limiting + hardening HTTP.
 - Reglas de Firestore sin hardcodes de email para privilegios.
+- MSI desinstalador para limpieza total de rastros locales.
 
 ---
 
-## Flujo de arquitectura
+## Flujo funcional
 
 1. Usuario inicia sesion con Firebase Auth.
-2. Frontend consulta inventario y telemetria desde Firestore.
-3. Agente Windows registra el activo en backend.
-4. Backend emite credenciales unicas por activo.
-5. Agente envia heartbeat autenticado (CPU, RAM, disco).
+2. Frontend consulta inventario y telemetria en Firestore.
+3. Agente Windows registra activo contra backend seguro.
+4. Backend emite credenciales unicas por dispositivo.
+5. Agente envia heartbeat periodico autenticado.
 
 ---
 
-## Inicio rapido
+## Descargas para equipos Admin
+
+En la seccion Agente Seguro del software (visible para rol Admin) se habilitan estas descargas:
+
+- Instalador PowerShell (`.ps1`)
+- MSI de instalacion (`AssetFlow-Agent-Installer.msi`)
+- MSI desinstalador (`AssetFlow-Agent-Uninstaller.msi`) con limpieza de tareas y rastros
+
+Limpieza aplicada por desinstalador:
+
+- Elimina tareas programadas del agente (incluye nombres legacy)
+- Borra rastros en ProgramData, Program Files, LocalAppData y AppData
+- Limpia claves de registro locales de AssetFlow
+
+---
+
+## Quickstart
 
 ### 1) Instalar dependencias
 
@@ -54,77 +97,73 @@ Inventario IT moderno con telemetria segura, backend endurecido y agente Windows
 npm install
 ```
 
-### 2) Configurar variables de entorno (basado en .env.example)
+### 2) Configurar entorno (basado en `.env.example`)
 
 - APP_URL
 - PORT
 - AGENT_BOOTSTRAP_TOKEN
 - AGENT_HEARTBEAT_INTERVAL_SECONDS
 
-### 3) Levantar en desarrollo
+### 3) Ejecutar en desarrollo
 
 ```bash
 npm run dev
 ```
 
-### 4) Probar
+### 4) URL local
 
-- App local: http://localhost:3000
+- http://localhost:3000
 
 ---
 
-## Scripts disponibles
+## Scripts principales
 
-| Script | Que hace |
+| Script | Descripcion |
 |---|---|
-| npm run dev | Servidor local (Express + Vite middleware) |
-| npm run lint | Chequeo TypeScript |
-| npm run test | Pruebas de seguridad backend |
-| npm run build | Build de produccion frontend |
-| npm run build:msi | Genera MSI del agente (requiere WiX) |
+| `npm run dev` | Servidor local (Express + Vite middleware) |
+| `npm run lint` | Validacion TypeScript |
+| `npm run test` | Pruebas backend |
+| `npm run build` | Build frontend produccion |
+| `npm run build:msi` | Genera MSI instalador y desinstalador (WiX requerido) |
 
 ---
 
-## Agente Windows
+## Distribucion empresarial MSI
 
-Desde la seccion Agente Seguro puedes descargar:
+Archivos relevantes:
 
-- Instalador PowerShell (.ps1)
-- Paquete MSI (cuando este publicado)
-- MSI desinstalador con limpieza total de rastros
+- `packaging/msi/AssetFlow.Agent.wxs`
+- `packaging/msi/AssetFlow.Agent.Cleanup.wxs`
+- `tools/msi/build-agent-msi.ps1`
 
-Modos soportados por el instalador:
+Publicacion recomendada:
 
-- Install
-- Run
-- Status
-- Uninstall
-
-Persistencia y estado local:
-
-- C:\ProgramData\AssetFlow\agent-state.json
-- C:\ProgramData\AssetFlow\agent.log
-- Tarea programada AssetFlowSecureAgent
+1. Generar artefactos con `npm run build:msi`.
+2. Publicar ambos MSI en GitHub Releases.
+3. Definir `VITE_AGENT_MSI_URL` o usar `/downloads/AssetFlow-Agent-Installer.msi`.
+4. Definir `VITE_AGENT_UNINSTALL_MSI_URL` o usar `/downloads/AssetFlow-Agent-Uninstaller.msi`.
 
 ---
 
-## MSI y distribucion empresarial
+## Roadmap comercial (Fase 2)
 
-Archivos de empaquetado:
+Objetivo: evolucionar de inventario seguro a plataforma ITAM completa.
 
-- packaging/msi/AssetFlow.Agent.wxs
-- tools/msi/build-agent-msi.ps1
+- Discovery sin agente en segmentos de red
+- Integraciones: Intune, Azure, Jamf, VMware, AWS
+- Inventario de software y compliance de licencias
+- Lifecycle automation (compra, renovacion, disposal)
+- Auditoria de cambios y gobierno de datos
+- Dashboards avanzados y busqueda asistida
 
-Publicacion recomendada del MSI:
+Referencias:
 
-1. Generar artefacto con npm run build:msi.
-2. Publicar en GitHub Releases.
-3. Configurar VITE_AGENT_MSI_URL o servirlo en /downloads/AssetFlow-Agent-Installer.msi.
-4. Configurar VITE_AGENT_UNINSTALL_MSI_URL o servirlo en /downloads/AssetFlow-Agent-Uninstaller.msi.
+- `Fase 2/IMPLEMENTACION_Y_ROADMAP.md`
+- `Fase 2/README.md`
 
 ---
 
-## Calidad antes de release
+## Calidad y salida a mercado
 
 ```bash
 npm run lint
@@ -132,37 +171,15 @@ npm run test
 npm run build
 ```
 
----
+Checklist de release:
 
-## Roadmap Fase 2
-
-Objetivo: evolucionar de inventario seguro a plataforma ITAM empresarial.
-
-Capacidades objetivo:
-
-- Discovery sin agente de red.
-- Integraciones Intune, Azure, Jamf, VMware, AWS.
-- Inventario de software y compliance de licencias.
-- Lifecycle automation (compra, renovacion, disposal).
-- Auditoria de cambios y gobernanza de datos.
-- Dashboards avanzados y busqueda asistida.
-
-Referencias de Fase 2:
-
-- Fase 2/IMPLEMENTACION_Y_ROADMAP.md
-- Fase 2/README.md
+1. Secretos fuera del repositorio.
+2. Build y pruebas en verde.
+3. Documentacion Fase 2 actualizada.
+4. MSI instalador y MSI desinstalador publicados y versionados.
 
 ---
 
-## Checklist para GitHub
+## Estado
 
-1. Variables y secretos fuera del repositorio.
-2. npm run lint, npm run test y npm run build en verde.
-3. Documentacion de Fase 2 revisada y ordenada.
-4. MSI publicado como artefacto versionado.
-
----
-
-## Estado del proyecto
-
-Proyecto activo, funcional en entorno local y preparado para evolucionar por sprints en Fase 2.
+Proyecto activo, funcional y orientado a despliegue empresarial por sprints.
