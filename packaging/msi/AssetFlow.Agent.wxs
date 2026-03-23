@@ -11,45 +11,43 @@
     <MajorUpgrade DowngradeErrorMessage="A newer version of AssetFlow Agent is already installed." />
     <MediaTemplate EmbedCab="yes" />
 
+    <Property Id="AGENT_BASE_URL" Value="http://localhost:3000" />
+    <Property Id="AGENT_BOOTSTRAP_TOKEN" Secure="yes" Hidden="yes" />
+
     <Feature Id="MainFeature" Title="AssetFlow Agent" Level="1">
-      <ComponentGroupRef Id="AgentFiles" />
+      <ComponentRef Id="AgentScriptComponent" />
+      <ComponentRef Id="ReadmeComponent" />
     </Feature>
 
     <InstallExecuteSequence>
-      <Custom Action="RunInstallCommand" After="InstallFiles" Condition="NOT REMOVE" />
-      <Custom Action="RunUninstallCommand" Before="RemoveFiles" Condition="REMOVE~=&quot;ALL&quot;" />
+      <Custom Action="RunAgentInstallCommand" After="InstallFinalize" Condition="NOT REMOVE" />
+      <Custom Action="RunAgentUninstallCommand" Before="RemoveFiles" Condition="REMOVE~=&quot;ALL&quot;" />
     </InstallExecuteSequence>
 
-    <Binary Id="PowerShellExe" SourceFile="C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" />
-
     <CustomAction
-      Id="RunInstallCommand"
-      Execute="deferred"
-      Impersonate="no"
-      Directory="INSTALLFOLDER"
-      ExeCommand="-NoProfile -ExecutionPolicy Bypass -File &quot;[#assetflow-agent.ps1]&quot; -Mode Install"
+      Id="RunAgentInstallCommand"
+      Execute="immediate"
+      Impersonate="yes"
       Return="check"
-      BinaryRef="PowerShellExe" />
+      Directory="INSTALLFOLDER"
+      ExeCommand="[SystemFolder]WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;[#AssetflowAgentPs1]&quot; -Mode Install -BootstrapToken &quot;[AGENT_BOOTSTRAP_TOKEN]&quot; -BaseUrl &quot;[AGENT_BASE_URL]&quot;" />
 
     <CustomAction
-      Id="RunUninstallCommand"
+      Id="RunAgentUninstallCommand"
       Execute="deferred"
       Impersonate="no"
-      Directory="INSTALLFOLDER"
-      ExeCommand="-NoProfile -ExecutionPolicy Bypass -File &quot;[#assetflow-agent.ps1]&quot; -Mode Uninstall"
       Return="ignore"
-      BinaryRef="PowerShellExe" />
+      Directory="INSTALLFOLDER"
+      ExeCommand="[SystemFolder]WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;[#AssetflowAgentPs1]&quot; -Mode Uninstall" />
 
     <StandardDirectory Id="ProgramFiles64Folder">
       <Directory Id="INSTALLFOLDER" Name="AssetFlowAgent">
-        <ComponentGroup Id="AgentFiles" Directory="INSTALLFOLDER">
-          <Component Id="AgentScriptComponent" Guid="A3892A82-8C06-4EE6-9E74-86A534725027">
-            <File Id="assetflow-agent.ps1" Source="$(sys.SOURCEFILEDIR)..\..\public\downloads\assetflow-agent.ps1" KeyPath="yes" />
-          </Component>
-          <Component Id="ReadmeComponent" Guid="61A9CD0D-CB3E-44B1-8ED8-8E2FA0DFA503">
-            <File Id="README-agent.txt" Source="$(sys.SOURCEFILEDIR)..\..\public\downloads\README-agent.txt" KeyPath="yes" />
-          </Component>
-        </ComponentGroup>
+        <Component Id="AgentScriptComponent" Guid="A3892A82-8C06-4EE6-9E74-86A534725027">
+          <File Id="AssetflowAgentPs1" Source="$(sys.SOURCEFILEDIR)..\..\public\downloads\assetflow-agent.ps1" KeyPath="yes" />
+        </Component>
+        <Component Id="ReadmeComponent" Guid="61A9CD0D-CB3E-44B1-8ED8-8E2FA0DFA503">
+          <File Id="ReadmeAgentTxt" Source="$(sys.SOURCEFILEDIR)..\..\public\downloads\README-agent.txt" KeyPath="yes" />
+        </Component>
       </Directory>
     </StandardDirectory>
   </Package>

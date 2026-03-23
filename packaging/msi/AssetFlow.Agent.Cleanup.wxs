@@ -12,44 +12,18 @@
     <MediaTemplate EmbedCab="yes" />
 
     <Feature Id="CleanupFeature" Title="AssetFlow Cleanup" Level="1">
-      <ComponentGroupRef Id="CleanupFiles" />
+      <ComponentRef Id="CleanupScriptComponent" />
+      <ComponentRef Id="CleanupReadmeComponent" />
     </Feature>
-
-    <InstallExecuteSequence>
-      <Custom Action="RunCleanupCommand" After="InstallFiles" Condition="NOT REMOVE" />
-      <Custom Action="RunCleanupCommandOnRemove" Before="RemoveFiles" Condition="REMOVE~=&quot;ALL&quot;" />
-    </InstallExecuteSequence>
-
-    <Binary Id="PowerShellExe" SourceFile="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" />
-
-    <CustomAction
-      Id="RunCleanupCommand"
-      Execute="deferred"
-      Impersonate="no"
-      Directory="CLEANUPFOLDER"
-      ExeCommand="-NoProfile -ExecutionPolicy Bypass -File &quot;[#assetflow-agent-cleanup.ps1]&quot; -Mode Purge"
-      Return="check"
-      BinaryRef="PowerShellExe" />
-
-    <CustomAction
-      Id="RunCleanupCommandOnRemove"
-      Execute="deferred"
-      Impersonate="no"
-      Directory="CLEANUPFOLDER"
-      ExeCommand="-NoProfile -ExecutionPolicy Bypass -File &quot;[#assetflow-agent-cleanup.ps1]&quot; -Mode Purge"
-      Return="ignore"
-      BinaryRef="PowerShellExe" />
 
     <StandardDirectory Id="ProgramFiles64Folder">
       <Directory Id="CLEANUPFOLDER" Name="AssetFlowCleanup">
-        <ComponentGroup Id="CleanupFiles" Directory="CLEANUPFOLDER">
-          <Component Id="CleanupScriptComponent" Guid="D0CF32AF-9E2D-4F3F-BED0-EB9E825E748F">
-            <File Id="assetflow-agent-cleanup.ps1" Source="$(sys.SOURCEFILEDIR)..\..\public\downloads\assetflow-agent-cleanup.ps1" KeyPath="yes" />
-          </Component>
-          <Component Id="CleanupReadmeComponent" Guid="AE7D7A7B-11CD-4256-8A3D-A0A4EE1A5A8A">
-            <File Id="README-agent.txt" Source="$(sys.SOURCEFILEDIR)..\..\public\downloads\README-agent.txt" KeyPath="yes" />
-          </Component>
-        </ComponentGroup>
+        <Component Id="CleanupScriptComponent" Guid="D0CF32AF-9E2D-4F3F-BED0-EB9E825E748F">
+          <File Id="AssetflowAgentCleanupPs1" Source="$(sys.SOURCEFILEDIR)..\..\public\downloads\assetflow-agent-cleanup.ps1" KeyPath="yes" />
+        </Component>
+        <Component Id="CleanupReadmeComponent" Guid="AE7D7A7B-11CD-4256-8A3D-A0A4EE1A5A8A">
+          <File Id="ReadmeAgentCleanupTxt" Source="$(sys.SOURCEFILEDIR)..\..\public\downloads\README-agent.txt" KeyPath="yes" />
+        </Component>
       </Directory>
     </StandardDirectory>
   </Package>

@@ -15,6 +15,86 @@ $agentVersion = "3.0.0"
 $defaultHeartbeatSeconds = 14400
 $commandPollSeconds = 60
 
+function Prompt-AgentConfiguration {
+	try {
+		Add-Type -AssemblyName System.Windows.Forms | Out-Null
+		Add-Type -AssemblyName System.Drawing | Out-Null
+	} catch {
+		return $null
+	}
+
+	$form = New-Object System.Windows.Forms.Form
+	$form.Text = "AssetFlow Agent - Configuracion"
+	$form.Size = New-Object System.Drawing.Size(560, 240)
+	$form.StartPosition = "CenterScreen"
+	$form.TopMost = $true
+
+	$label = New-Object System.Windows.Forms.Label
+	$label.Location = New-Object System.Drawing.Point(16, 12)
+	$label.Size = New-Object System.Drawing.Size(520, 30)
+	$label.Text = "Ingresá Base URL y Bootstrap Token para registrar el equipo"
+	$form.Controls.Add($label)
+
+	$baseUrlLabel = New-Object System.Windows.Forms.Label
+	$baseUrlLabel.Location = New-Object System.Drawing.Point(16, 52)
+	$baseUrlLabel.Size = New-Object System.Drawing.Size(180, 20)
+	$baseUrlLabel.Text = "Base URL"
+	$form.Controls.Add($baseUrlLabel)
+
+	$baseUrlText = New-Object System.Windows.Forms.TextBox
+	$baseUrlText.Location = New-Object System.Drawing.Point(16, 72)
+	$baseUrlText.Size = New-Object System.Drawing.Size(520, 24)
+	$baseUrlText.Text = $BaseUrl
+	$form.Controls.Add($baseUrlText)
+
+	$tokenLabel = New-Object System.Windows.Forms.Label
+	$tokenLabel.Location = New-Object System.Drawing.Point(16, 104)
+	$tokenLabel.Size = New-Object System.Drawing.Size(220, 20)
+	$tokenLabel.Text = "Bootstrap Token"
+	$form.Controls.Add($tokenLabel)
+
+	$tokenText = New-Object System.Windows.Forms.TextBox
+	$tokenText.Location = New-Object System.Drawing.Point(16, 124)
+	$tokenText.Size = New-Object System.Drawing.Size(520, 24)
+	$tokenText.UseSystemPasswordChar = $true
+	$form.Controls.Add($tokenText)
+
+	$okButton = New-Object System.Windows.Forms.Button
+	$okButton.Location = New-Object System.Drawing.Point(360, 162)
+	$okButton.Size = New-Object System.Drawing.Size(80, 28)
+	$okButton.Text = "Aceptar"
+	$okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
+	$form.Controls.Add($okButton)
+
+	$cancelButton = New-Object System.Windows.Forms.Button
+	$cancelButton.Location = New-Object System.Drawing.Point(456, 162)
+	$cancelButton.Size = New-Object System.Drawing.Size(80, 28)
+	$cancelButton.Text = "Cancelar"
+	$cancelButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+	$form.Controls.Add($cancelButton)
+
+	$form.AcceptButton = $okButton
+	$form.CancelButton = $cancelButton
+
+	$result = $form.ShowDialog()
+	if ($result -ne [System.Windows.Forms.DialogResult]::OK) {
+		throw "Instalacion cancelada por el usuario."
+	}
+
+	$newBaseUrl = $baseUrlText.Text.Trim()
+	$newToken = $tokenText.Text.Trim()
+
+	if ([string]::IsNullOrWhiteSpace($newBaseUrl)) {
+		throw "Base URL is required."
+	}
+
+	if ([string]::IsNullOrWhiteSpace($newToken)) {
+		throw "Bootstrap token is required."
+	}
+
+	return @{ BaseUrl = $newBaseUrl; BootstrapToken = $newToken }
+}
+
 function Write-Log([string]$message) {
 	if (-not (Test-Path $installRoot)) {
 		New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
@@ -158,7 +238,15 @@ function Install-Agent {
 	Write-Progress -Activity "AssetFlow Agent" -Status "Validando requisitos" -PercentComplete 10
 
 	if ([string]::IsNullOrWhiteSpace($BootstrapToken)) {
-		$script:BootstrapToken = Read-Host "Bootstrap token"
+		if ([Environment]::UserInteractive) {
+			$wizardData = Prompt-AgentConfiguration
+			if ($wizardData) {
+				$script:BaseUrl = $wizardData.BaseUrl
+				$script:BootstrapToken = $wizardData.BootstrapToken
+			}
+		} else {
+			$script:BootstrapToken = Read-Host "Bootstrap token"
+		}
 	}
 
 	$state = Get-AgentState

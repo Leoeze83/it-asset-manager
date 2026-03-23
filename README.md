@@ -229,6 +229,11 @@ Checklist de release:
 3. Documentacion Fase 2 actualizada.
 4. MSI instalador y MSI desinstalador publicados y versionados.
 
+Guia de validacion completa:
+
+- [Instructivos/GUIA_PRUEBAS_END_TO_END.md](Instructivos/GUIA_PRUEBAS_END_TO_END.md)
+- [Instructivos/GUIA_ENTORNO_PREPRODUCTIVO_E2E.md](Instructivos/GUIA_ENTORNO_PREPRODUCTIVO_E2E.md)
+
 ---
 
 ## Llamado a accion
