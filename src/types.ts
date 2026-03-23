@@ -12,11 +12,22 @@ export interface Asset {
   location?: string;
   purchaseDate?: string;
   specs?: string;
+  os?: string;
+  ipv4?: string;
   lastSeen?: any;
+  agentEnabled?: boolean;
+  agentVersion?: string;
+  agentRefreshRequested?: boolean;
+  agentRefreshRequestedAt?: any;
+  agentLastRefreshAt?: any;
   realtime?: {
     cpu?: number;
     ram?: number;
     disk?: number;
+    uptimeHours?: number;
+    remote?: {
+      rdpEnabled?: boolean;
+    };
     screenshot?: string;
   };
   createdAt: any;

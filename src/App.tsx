@@ -16,7 +16,9 @@ import {
   Menu,
   X,
   Download,
-  MonitorCheck
+  MonitorCheck,
+  RefreshCw,
+  ExternalLink
 } from 'lucide-react';
 import { auth, onAuthStateChanged, signInWithRedirect, GoogleAuthProvider, signOut } from './firebaseAuth';
 import { Asset, User, AssetType, AssetStatus } from './types';
@@ -208,6 +210,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [agentActionMessage, setAgentActionMessage] = useState<string | null>(null);
   const isAdmin = user?.role === 'Admin';
 
   const handleAddAsset = async (data: Partial<Asset>) => {
@@ -337,6 +340,37 @@ export default function App() {
   };
 
   const handleLogout = () => signOut(auth);
+
+  const requestAgentRefresh = async (asset: Asset) => {
+    if (!isAdmin) {
+      return;
+    }
+
+    try {
+      const { db, firestore } = await loadFirestoreModule();
+      const { updateDoc, doc, serverTimestamp } = firestore;
+      await updateDoc(doc(db, 'assets', asset.id), {
+        agentRefreshRequested: true,
+        agentRefreshRequestedAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      setAgentActionMessage(`Refresh solicitado para ${asset.name}.`);
+      setTimeout(() => setAgentActionMessage(null), 5000);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `assets/${asset.id}`);
+    }
+  };
+
+  const openRdpConnection = (asset: Asset) => {
+    const host = (asset as any).ipv4 || asset.name;
+    if (!host) {
+      setAgentActionMessage('No hay host disponible para conexión remota.');
+      setTimeout(() => setAgentActionMessage(null), 5000);
+      return;
+    }
+
+    window.open(`ms-rd:full%20address=s:${encodeURIComponent(host)}`);
+  };
 
   if (loading) {
     return (
@@ -485,8 +519,11 @@ export default function App() {
               assets={assets} 
               users={users} 
               user={user} 
+              actionMessage={agentActionMessage}
               onEdit={(asset) => { setEditingAsset(asset); setIsFormOpen(true); }}
               onNew={() => { setEditingAsset(null); setIsFormOpen(true); }}
+              onRequestRefresh={requestAgentRefresh}
+              onOpenRdp={openRdpConnection}
             />
           )}
           {isAdmin && activeTab === 'users' && <UserManagement users={users} />}
@@ -641,9 +678,34 @@ function Dashboard({ assets, users }: { assets: Asset[], users: User[] }) {
 
 // --- Inventory View ---
 
-function Inventory({ assets, users, user, onEdit, onNew }: { assets: Asset[], users: User[], user: User, onEdit: (asset: Asset) => void, onNew: () => void }) {
+function Inventory({
+  assets,
+  users,
+  user,
+  onEdit,
+  onNew,
+  onRequestRefresh,
+  onOpenRdp,
+  actionMessage,
+}: {
+  assets: Asset[];
+  users: User[];
+  user: User;
+  onEdit: (asset: Asset) => void;
+  onNew: () => void;
+  onRequestRefresh: (asset: Asset) => void;
+  onOpenRdp: (asset: Asset) => void;
+  actionMessage: string | null;
+}) {
+  const isManagedAgent = (asset: Asset) => asset.location === 'Managed Agent' || Boolean((asset as any).agentEnabled);
+
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2" role="status">
+          {actionMessage}
+        </p>
+      )}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="relative">
@@ -729,12 +791,33 @@ function Inventory({ assets, users, user, onEdit, onNew }: { assets: Asset[], us
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         {user.role === 'Admin' && (
-                          <button 
-                            onClick={() => onEdit(asset)}
-                            className="p-2 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-all"
-                          >
-                            <MoreVertical size={16} />
-                          </button>
+                          <>
+                            {isManagedAgent(asset) && (
+                              <button
+                                onClick={() => onRequestRefresh(asset)}
+                                className="p-2 text-zinc-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all"
+                                title="Solicitar refresh inmediato"
+                              >
+                                <RefreshCw size={16} />
+                              </button>
+                            )}
+                            {isManagedAgent(asset) && (
+                              <button
+                                onClick={() => onOpenRdp(asset)}
+                                className="p-2 text-zinc-400 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all"
+                                title="Conectar por RDP"
+                              >
+                                <ExternalLink size={16} />
+                              </button>
+                            )}
+                            <button 
+                              onClick={() => onEdit(asset)}
+                              className="p-2 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-all"
+                              title="Editar activo"
+                            >
+                              <MoreVertical size={16} />
+                            </button>
+                          </>
                         )}
                       </div>
                     </td>
@@ -918,274 +1001,30 @@ function UserManagement({ users }: { users: User[] }) {
 
 function AgentPage() {
   const [packageMessage, setPackageMessage] = useState<string | null>(null);
+  const agentScriptUrl = (import.meta.env.VITE_AGENT_SCRIPT_URL as string | undefined)
+    || '/downloads/assetflow-agent.ps1';
   const msiPackageUrl = (import.meta.env.VITE_AGENT_MSI_URL as string | undefined)
     || '/downloads/AssetFlow-Agent-Installer.msi';
   const uninstallMsiPackageUrl = (import.meta.env.VITE_AGENT_UNINSTALL_MSI_URL as string | undefined)
     || '/downloads/AssetFlow-Agent-Uninstaller.msi';
 
   const agentScript = `
-param(
-  [ValidateSet("Install", "Run", "Status", "Uninstall")]
-  [string]$Mode = "Install",
-  [string]$BootstrapToken,
-  [string]$BaseUrl = "${window.location.origin}"
-)
+param(...)
+Mode: Install | Run | Status | Uninstall | RefreshNow
 
-$ErrorActionPreference = "Stop"
-$installRoot = Join-Path $env:ProgramData "AssetFlow"
-$statePath = Join-Path $installRoot "agent-state.json"
-$logPath = Join-Path $installRoot "agent.log"
-$taskName = "AssetFlowSecureAgent"
-$installedScriptPath = Join-Path $installRoot "assetflow-agent.ps1"
-$agentVersion = "2.1.0"
-
-function Write-Log([string]$message) {
-  $line = "$(Get-Date -Format o) $message"
-  Write-Host $line
-  if (-not (Test-Path $installRoot)) {
-    New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
-  }
-  Add-Content -Path $logPath -Value $line -Encoding UTF8
-}
-
-function Assert-Administrator {
-  $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-  $principal = New-Object Security.Principal.WindowsPrincipal($identity)
-  if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    throw "Run PowerShell as Administrator for this operation."
-  }
-}
-
-function Get-AgentState {
-  if (-not (Test-Path $statePath)) {
-    return $null
-  }
-
-  try {
-    return Get-Content $statePath -Raw | ConvertFrom-Json
-  } catch {
-    Write-Log "Invalid agent state file detected, removing it."
-    Remove-Item $statePath -Force -ErrorAction SilentlyContinue
-    return $null
-  }
-}
-
-function Save-AgentState($state) {
-  if (-not (Test-Path $installRoot)) {
-    New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
-  }
-  $state | ConvertTo-Json -Depth 4 | Set-Content -Path $statePath -Encoding UTF8
-}
-
-function Register-Agent([string]$token) {
-  if ([string]::IsNullOrWhiteSpace($token)) {
-    throw "Bootstrap token is required for registration."
-  }
-
-  $hostname = $env:COMPUTERNAME
-  $os = (Get-CimInstance Win32_OperatingSystem).Caption
-  $serial = (Get-CimInstance Win32_Bios).SerialNumber
-  $cpuName = (Get-CimInstance Win32_Processor | Select-Object -First 1 -ExpandProperty Name)
-  $ramGb = [Math]::Round(((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB), 2)
-
-  $body = @{
-    hostname = $hostname
-    os = $os
-    serialNumber = $serial
-    type = "Laptop"
-    specs = "CPU: $cpuName; RAM: $ramGb GB"
-    agentVersion = $agentVersion
-  } | ConvertTo-Json
-
-  $headers = @{
-    "x-agent-bootstrap-token" = $token
-  }
-
-  $response = Invoke-RestMethod -Uri "$BaseUrl/api/agent/register" -Method Post -Headers $headers -Body $body -ContentType "application/json"
-
-  $state = @{
-    id = $response.id
-    key = $response.agentKey
-    intervalSeconds = [Math]::Max([int]$response.intervalSeconds, 30)
-    registeredAt = (Get-Date -Format o)
-  }
-
-  Save-AgentState $state
-  Write-Log "Agent registered successfully with id $($state.id)."
-  return $state
-}
-
-function Send-Heartbeat($state) {
-  $cpu = (Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average
-  $totalMemory = [double](Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory
-  $freeMemory = [double](Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory * 1KB
-  $ramUsed = if ($totalMemory -gt 0) { 100 - (($freeMemory / $totalMemory) * 100) } else { 0 }
-  $disk = Get-CimInstance Win32_LogicalDisk | Where-Object { $_.DeviceID -eq "C:" } | Select-Object -First 1
-  $diskUsed = if ($disk -and $disk.Size -gt 0) { 100 - (($disk.FreeSpace / $disk.Size) * 100) } else { 0 }
-
-  $body = @{
-    id = $state.id
-    cpu = [Math]::Round($cpu, 2)
-    ram = [Math]::Round($ramUsed, 2)
-    disk = [Math]::Round($diskUsed, 2)
-  } | ConvertTo-Json
-
-  $headers = @{
-    "x-agent-id" = $state.id
-    "x-agent-key" = $state.key
-  }
-
-  Invoke-RestMethod -Uri "$BaseUrl/api/agent/heartbeat" -Method Post -Headers $headers -Body $body -ContentType "application/json" | Out-Null
-}
-
-function Install-Agent {
-  Assert-Administrator
-
-  if ([string]::IsNullOrWhiteSpace($BootstrapToken)) {
-    $script:BootstrapToken = Read-Host "Bootstrap token"
-  }
-
-  $state = Get-AgentState
-  if (-not $state) {
-    $state = Register-Agent $script:BootstrapToken
-  }
-
-  if (-not (Test-Path $installRoot)) {
-    New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
-  }
-
-  Copy-Item -Path $PSCommandPath -Destination $installedScriptPath -Force
-
-  $actionArgs = '-NoProfile -ExecutionPolicy Bypass -File "' + $installedScriptPath + '" -Mode Run -BaseUrl "' + $BaseUrl + '"'
-  $action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument $actionArgs
-  $trigger = New-ScheduledTaskTrigger -AtStartup
-  $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-  $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
-
-  Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
-  Start-ScheduledTask -TaskName $taskName
-
-  Write-Host "Agent installed successfully."
-  Write-Host "Task name: $taskName"
-  Write-Host "State file: $statePath"
-  Write-Host "Log file: $logPath"
-  Write-Host "Registered asset id: $($state.id)"
-}
-
-function Run-Agent {
-  $state = Get-AgentState
-  if (-not $state) {
-    if ([string]::IsNullOrWhiteSpace($BootstrapToken)) {
-      Write-Log "No registration state found and no bootstrap token provided. Exiting."
-      exit 1
-    }
-    $state = Register-Agent $BootstrapToken
-  }
-
-  $intervalSeconds = [Math]::Max([int]$state.intervalSeconds, 30)
-  Write-Log "Agent loop started with interval $($intervalSeconds)s."
-
-  while ($true) {
-    try {
-      Send-Heartbeat $state
-      Write-Log "Heartbeat sent for asset $($state.id)."
-    } catch {
-      $message = $_.Exception.Message
-      Write-Log "Heartbeat failed: $message"
-      if ($message -match "401|403") {
-        Write-Log "Credentials rejected by server. Reinstall the agent to rotate credentials."
-      }
-    }
-
-    Start-Sleep -Seconds $intervalSeconds
-  }
-}
-
-function Show-AgentStatus {
-  $task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
-  $state = Get-AgentState
-
-  if ($task) {
-    $taskInfo = Get-ScheduledTaskInfo -TaskName $taskName
-    Write-Host "Task: Installed ($($task.State))"
-    Write-Host "LastRunTime: $($taskInfo.LastRunTime)"
-    Write-Host "LastTaskResult: $($taskInfo.LastTaskResult)"
-  } else {
-    Write-Host "Task: Not installed"
-  }
-
-  if ($state) {
-    Write-Host "Asset ID: $($state.id)"
-    Write-Host "Interval: $([Math]::Max([int]$state.intervalSeconds, 30)) seconds"
-    Write-Host "RegisteredAt: $($state.registeredAt)"
-  } else {
-    Write-Host "State: Not registered"
-  }
-
-  if (Test-Path $logPath) {
-    Write-Host "Log: $logPath"
-  }
-}
-
-function Uninstall-Agent {
-  Assert-Administrator
-
-  $taskNames = @(
-    $taskName,
-    "AssetFlowAgent",
-    "AssetFlowSecureAgentLegacy"
-  )
-
-  foreach ($name in $taskNames) {
-    $task = Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue
-    if ($task) {
-      try {
-        Stop-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue
-      } catch {
-      }
-      Unregister-ScheduledTask -TaskName $name -Confirm:$false -ErrorAction SilentlyContinue
-    }
-  }
-
-  $pathsToRemove = @(
-    $installRoot,
-    (Join-Path $env:ProgramFiles "AssetFlowAgent"),
-    (Join-Path ([Environment]::GetFolderPath("ProgramFilesX86")) "AssetFlowAgent"),
-    (Join-Path $env:ProgramData "AssetFlow"),
-    (Join-Path $env:ProgramData "AssetFlowAgent"),
-    (Join-Path $env:ProgramData "Microsoft\Windows\Start Menu\Programs\AssetFlow"),
-    (Join-Path $env:LocalAppData "AssetFlow"),
-    (Join-Path $env:AppData "AssetFlow")
-  )
-
-  foreach ($path in $pathsToRemove) {
-    if (-not [string]::IsNullOrWhiteSpace($path) -and (Test-Path $path)) {
-      Remove-Item $path -Recurse -Force -ErrorAction SilentlyContinue
-    }
-  }
-
-  Remove-Item -Path "HKLM:\SOFTWARE\\AssetFlow" -Recurse -Force -ErrorAction SilentlyContinue
-  Remove-Item -Path "HKLM:\SOFTWARE\\WOW6432Node\\AssetFlow" -Recurse -Force -ErrorAction SilentlyContinue
-
-  Write-Host "Agent and local traces removed."
-}
-
-switch ($Mode) {
-  "Install" { Install-Agent }
-  "Run" { Run-Agent }
-  "Status" { Show-AgentStatus }
-  "Uninstall" { Uninstall-Agent }
-}
+- Registro seguro contra /api/agent/register
+- Worker en segundo plano (Scheduled Task)
+- Heartbeat automatico cada 4 horas
+- Poll de comandos cada 60 segundos
+- Refresh bajo demanda desde consola web
+- Telemetria basica: CPU, RAM, disco, uptime, host, IP y estado RDP
   `.trim();
 
   const downloadScript = () => {
-    const blob = new Blob([agentScript], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'register-agent-secure.ps1';
+    a.href = agentScriptUrl;
+    a.download = 'assetflow-agent.ps1';
     a.click();
-    URL.revokeObjectURL(url);
   };
 
   const downloadMsiPackage = async () => {
@@ -1234,7 +1073,7 @@ switch ($Mode) {
         </div>
         <h2 className="text-3xl font-bold text-zinc-900">Agente Seguro de Inventario</h2>
         <p className="text-zinc-600 max-w-2xl mx-auto">
-          Esta versión registra equipos y envía telemetría mínima. No ejecuta comandos remotos, no mantiene WebSockets abiertos y no captura pantallas.
+          Registra equipos automaticamente, reporta telemetria basica cada 4 horas y permite refresh inmediato desde la consola de administracion.
         </p>
       </div>
 
@@ -1243,7 +1082,7 @@ switch ($Mode) {
           <div>
             <h3 className="text-xl font-bold mb-4">Windows (PowerShell)</h3>
             <p className="text-sm text-zinc-500 mb-6">
-              Este instalador registra el equipo, guarda estado en ProgramData y crea una tarea programada para enviar heartbeat al iniciar Windows.
+              Instala el agente como tarea en segundo plano, mantiene comunicacion con el servidor y permite control remoto por RDP desde Inventario.
             </p>
             <div className="bg-zinc-900 rounded-lg p-4 mb-6 overflow-x-auto">
               <pre className="text-xs text-zinc-300 font-mono">
@@ -1279,7 +1118,8 @@ switch ($Mode) {
             <ul className="space-y-3 text-sm text-zinc-600">
               <li>Registro protegido con `AGENT_BOOTSTRAP_TOKEN` y credenciales emitidas por el servidor.</li>
               <li>Heartbeat autenticado mediante `x-agent-id` y `x-agent-key` con rotación por alta o reinscripción.</li>
-              <li>Telemetría mínima: CPU, RAM y disco. Sin captura de pantalla ni ejecución remota.</li>
+              <li>Telemetría mínima cada 4 horas: CPU, RAM, disco, host, IP y estado RDP.</li>
+              <li>Refresh manual desde consola Admin sin esperar al ciclo de 4 horas.</li>
               <li>Validación estricta, límites de tamaño y rate limiting en endpoints sensibles.</li>
             </ul>
           </div>
@@ -1288,6 +1128,7 @@ switch ($Mode) {
             <h3 className="text-xl font-bold mb-4">Despliegue recomendado</h3>
             <ul className="space-y-3 text-sm text-zinc-600">
               <li>Instala como administrador: <code className="bg-zinc-100 px-1 rounded">.\assetflow-agent.ps1 -Mode Install</code></li>
+              <li>Refresh inmediato: <code className="bg-zinc-100 px-1 rounded">.\assetflow-agent.ps1 -Mode RefreshNow</code></li>
               <li>Consulta estado: <code className="bg-zinc-100 px-1 rounded">.\assetflow-agent.ps1 -Mode Status</code></li>
               <li>Desinstala limpio: <code className="bg-zinc-100 px-1 rounded">.\assetflow-agent.ps1 -Mode Uninstall</code></li>
               <li>Publica el MSI en <code className="bg-zinc-100 px-1 rounded">/downloads/AssetFlow-Agent-Installer.msi</code> o define <code className="bg-zinc-100 px-1 rounded">VITE_AGENT_MSI_URL</code>.</li>

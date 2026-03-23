@@ -133,6 +133,27 @@ npm install
 - PORT
 - AGENT_BOOTSTRAP_TOKEN
 - AGENT_HEARTBEAT_INTERVAL_SECONDS
+- VITE_FIREBASE_API_KEY
+- VITE_FIREBASE_AUTH_DOMAIN
+- VITE_FIREBASE_PROJECT_ID
+- VITE_FIREBASE_STORAGE_BUCKET
+- VITE_FIREBASE_MESSAGING_SENDER_ID
+- VITE_FIREBASE_APP_ID
+
+Generar `AGENT_BOOTSTRAP_TOKEN` fuerte (PowerShell):
+
+```powershell
+[Convert]::ToBase64String((1..48 | ForEach-Object { Get-Random -Maximum 256 }))
+```
+
+Luego guárdalo en `.env.local` (no versionado) y en secretos de deploy.
+
+Rotación recomendada de la API key detectada por secret scanning:
+
+1. Crear nueva Firebase Web API key en Google Cloud Console.
+2. Restringirla por dominio y API (Firebase Auth / Firestore).
+3. Guardarla en `VITE_FIREBASE_API_KEY` en tu entorno.
+4. Revocar la key anterior y cerrar la alerta en GitHub Secret Scanning.
 
 ### 3) Ejecutar en desarrollo
 

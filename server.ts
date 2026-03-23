@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 
 const DEFAULT_PORT = Number.parseInt(process.env.PORT ?? "3000", 10);
 const DEFAULT_HEARTBEAT_INTERVAL_SECONDS = Number.parseInt(
-  process.env.AGENT_HEARTBEAT_INTERVAL_SECONDS ?? "60",
+  process.env.AGENT_HEARTBEAT_INTERVAL_SECONDS ?? "14400",
   10,
 );
 const AGENT_CREDENTIALS_COLLECTION = "agentCredentials";
@@ -33,6 +33,15 @@ interface AgentHeartbeatPayload {
   cpu?: number;
   ram?: number;
   disk?: number;
+  hostname?: string;
+  os?: string;
+  ipv4?: string;
+  uptimeHours?: number;
+  rdpEnabled?: boolean;
+}
+
+interface AgentCommandPayload {
+  id: string;
 }
 
 class HttpError extends Error {
@@ -101,6 +110,30 @@ function normalizePercentage(value: unknown, fieldName: string) {
 
   if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > 100) {
     throw new HttpError(400, `${fieldName} must be a number between 0 and 100`);
+  }
+
+  return Math.round(value * 100) / 100;
+}
+
+function normalizeBoolean(value: unknown, fieldName: string) {
+  if (value == null) {
+    return undefined;
+  }
+
+  if (typeof value !== "boolean") {
+    throw new HttpError(400, `${fieldName} must be a boolean`);
+  }
+
+  return value;
+}
+
+function normalizeNumber(value: unknown, fieldName: string, min: number, max: number) {
+  if (value == null) {
+    return undefined;
+  }
+
+  if (typeof value !== "number" || !Number.isFinite(value) || value < min || value > max) {
+    throw new HttpError(400, `${fieldName} must be a number between ${min} and ${max}`);
   }
 
   return Math.round(value * 100) / 100;
@@ -315,6 +348,22 @@ function validateHeartbeatPayload(body: unknown): AgentHeartbeatPayload {
     cpu: normalizePercentage(payload.cpu, "cpu"),
     ram: normalizePercentage(payload.ram, "ram"),
     disk: normalizePercentage(payload.disk, "disk"),
+    hostname: normalizeString(payload.hostname, "hostname", 100),
+    os: normalizeString(payload.os, "os", 120),
+    ipv4: normalizeString(payload.ipv4, "ipv4", 45),
+    uptimeHours: normalizeNumber(payload.uptimeHours, "uptimeHours", 0, 100000),
+    rdpEnabled: normalizeBoolean(payload.rdpEnabled, "rdpEnabled"),
+  };
+}
+
+function validateAgentCommandPayload(body: unknown): AgentCommandPayload {
+  if (!body || typeof body !== "object") {
+    throw new HttpError(400, "Request body must be a JSON object");
+  }
+
+  const payload = body as Record<string, unknown>;
+  return {
+    id: normalizeString(payload.id, "id", 128, { required: true })!,
   };
 }
 
@@ -410,14 +459,63 @@ async function createApp() {
       if (payload.cpu != null) realtimeUpdate["realtime.cpu"] = payload.cpu;
       if (payload.ram != null) realtimeUpdate["realtime.ram"] = payload.ram;
       if (payload.disk != null) realtimeUpdate["realtime.disk"] = payload.disk;
+      if (payload.uptimeHours != null) realtimeUpdate["realtime.uptimeHours"] = payload.uptimeHours;
+      if (payload.rdpEnabled != null) realtimeUpdate["realtime.remote.rdpEnabled"] = payload.rdpEnabled;
 
-      await getFirestore().collection("assets").doc(assetId).update({
+      const assetRef = getFirestore().collection("assets").doc(assetId);
+      const assetDoc = await assetRef.get();
+      const assetData = assetDoc.data() as { agentRefreshRequested?: boolean } | undefined;
+      const refreshRequested = Boolean(assetData?.agentRefreshRequested);
+
+      const topLevelUpdate: Record<string, unknown> = {
         ...realtimeUpdate,
         lastSeen: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
+      };
 
-      res.json({ status: "ok" });
+      if (payload.hostname) topLevelUpdate.name = payload.hostname;
+      if (payload.os) topLevelUpdate.os = payload.os;
+      if (payload.ipv4) topLevelUpdate.ipv4 = payload.ipv4;
+      if (refreshRequested) {
+        topLevelUpdate.agentRefreshRequested = false;
+        topLevelUpdate.agentLastRefreshAt = admin.firestore.FieldValue.serverTimestamp();
+      }
+
+      await assetRef.update(topLevelUpdate);
+
+      res.json({ status: "ok", refreshRequested });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/agent/command", createRateLimiter(60_000, 360), async (req, res, next) => {
+    try {
+      const payload = validateAgentCommandPayload(req.body);
+      const { assetId } = await verifyAgentCredentials(req);
+
+      if (assetId !== payload.id) {
+        throw new HttpError(403, "Agent identifier mismatch");
+      }
+
+      const assetRef = getFirestore().collection("assets").doc(assetId);
+      const assetDoc = await assetRef.get();
+      const assetData = assetDoc.data() as { agentRefreshRequested?: boolean } | undefined;
+      const refreshRequested = Boolean(assetData?.agentRefreshRequested);
+
+      if (refreshRequested) {
+        await assetRef.update({
+          agentRefreshRequested: false,
+          agentLastRefreshAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+
+      res.json({
+        status: "ok",
+        refreshRequested,
+        heartbeatIntervalSeconds: DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
+      });
     } catch (error) {
       next(error);
     }

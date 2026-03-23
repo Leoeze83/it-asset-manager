@@ -1,7 +1,7 @@
 {
   "projectId": "ai-studio-applet-webapp-4d689",
   "appId": "1:920066439643:web:ae30818b614b4d1ce1cffe",
-  "apiKey": "AIzaSyBcw_FpvqkwyEAjmHD1Z5BCJjwCc1dnr-4",
+  "apiKey": "set-in-env",
   "authDomain": "ai-studio-applet-webapp-4d689.firebaseapp.com",
   "firestoreDatabaseId": "ai-studio-135d6f6c-87af-45ed-b386-01ac22035098",
   "storageBucket": "ai-studio-applet-webapp-4d689.firebasestorage.app",
