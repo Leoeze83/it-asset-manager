@@ -229,17 +229,20 @@ Proyecto activo, funcional y orientado a despliegue empresarial por sprints.
 ---
 
 <p align="center">
-	<img src="https://capsule-render.vercel.app/api?type=rect&color=0:0f172a,100:0f172a&height=2&section=header" alt="footer separator" />
+	<img src="https://capsule-render.vercel.app/api?type=rect&color=0:1f2937,50:0ea5e9,100:10b981&height=3&section=header" alt="footer separator" />
 </p>
 
 <p align="center">
-	<img alt="VaderLoop Signature" src="https://img.shields.io/badge/VaderLoop-Signature-111827?style=for-the-badge&labelColor=0b0f19&color=c7a44c" />
+	<img alt="Desde Argentina" src="https://img.shields.io/badge/Desde-🇦🇷%20Argentina-e0f2fe?style=flat-square&labelColor=082f49&color=7dd3fc">
+	<img alt="Para el mundo" src="https://img.shields.io/badge/Para%20el-🌍%20Mundo-ecfeff?style=flat-square&labelColor=164e63&color=67e8f9">
+	<img alt="Con amor" src="https://img.shields.io/badge/Con-❤️-fff1f2?style=flat-square&labelColor=881337&color=fda4af">
+	<img alt="By VaderLoop" src="https://img.shields.io/badge/By-VaderLoop-f8fafc?style=flat-square&labelColor=111827&color=e2e8f0">
 </p>
 
 <p align="center">
-	<sub><i>✦ Creado desde 🇦🇷 para el 🌍 con ❤️ por <b>VaderLoop</b> ✦</i></sub>
+	<i>Creado desde 🇦🇷 para el 🌍 con ❤️ por <b>VaderLoop</b></i>
 </p>
 
 <p align="center">
-	<img src="https://capsule-render.vercel.app/api?type=rect&color=0:0f172a,100:0f172a&height=2&section=footer" alt="footer separator bottom" />
+	<img src="https://capsule-render.vercel.app/api?type=rect&color=0:10b981,50:0ea5e9,100:1f2937&height=3&section=footer" alt="footer separator bottom" />
 </p>
