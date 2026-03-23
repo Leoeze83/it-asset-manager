@@ -15,6 +15,12 @@
 	<b>Inventario IT empresarial con telemetria segura, despliegue rapido y control operativo real.</b>
 </p>
 
+<p align="center">
+	<a href="#quickstart"><img alt="Get Started" src="https://img.shields.io/badge/Start-Implementacion%20Rapida-0ea5e9?style=for-the-badge"></a>
+	<a href="#descargas-para-equipos-admin"><img alt="Admin Downloads" src="https://img.shields.io/badge/Admin-Descargas%20MSI-0078D4?style=for-the-badge"></a>
+	<a href="#calidad-y-salida-a-mercado"><img alt="Release Ready" src="https://img.shields.io/badge/Release-Enterprise%20Ready-16a34a?style=for-the-badge"></a>
+</p>
+
 ---
 
 ## Resumen ejecutivo
@@ -29,6 +35,18 @@ Esta plataforma esta pensada para empresas que necesitan:
 
 ---
 
+## Demo de producto
+
+<p align="center">
+	<img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXd0MXJkbW5qYXQ0ZzhpdWVqaTd4bWZ4MzRrMnhucDFwajBwd2RzYyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/coxQHKASG60HrHtvkt/giphy.gif" alt="IT Asset Manager Demo" width="880" />
+</p>
+
+<p align="center">
+	<b>Dashboard operativo + inventario + flujo de agente seguro listo para despliegue empresarial.</b>
+</p>
+
+---
+
 ## Por que compradores eligen esta solucion
 
 | Diferencial | Impacto de negocio |
@@ -38,6 +56,18 @@ Esta plataforma esta pensada para empresas que necesitan:
 | Operacion enterprise | Agente Windows distribuible por MSI para despliegue centralizado |
 | Baja friccion | UI moderna para operaciones diarias de inventario |
 | Escalabilidad | Base preparada para Discovery, compliance, lifecycle y conectores cloud |
+
+---
+
+## Comparativa para decision de compra
+
+| Criterio clave | IT Asset Manager | Herramientas basicas de inventario |
+|---|---|---|
+| Seguridad operativa | Sin ejecucion remota, sin screenshot, sin websocket de control | En muchos casos incluyen superficies de riesgo adicionales |
+| Despliegue en Windows | MSI instalador + MSI desinstalador con limpieza total | Instalaciones manuales o sin ciclo limpio de salida |
+| Gobernanza | Roles y acceso Admin para operaciones sensibles | Controles limitados o ad-hoc |
+| Evolucion ITAM | Roadmap enterprise para discovery, compliance y lifecycle | Escalabilidad reducida |
+| Trazabilidad | Registro + heartbeat autenticado por activo | Telemetria parcial o no autenticada |
 
 ---
 
@@ -177,6 +207,18 @@ Checklist de release:
 2. Build y pruebas en verde.
 3. Documentacion Fase 2 actualizada.
 4. MSI instalador y MSI desinstalador publicados y versionados.
+
+---
+
+## Llamado a accion
+
+Si estas evaluando plataforma ITAM para tu organizacion, este proyecto ya puede operar como base productiva y escalar por fases.
+
+<p align="center">
+	<a href="./Fase%202/README.md"><img alt="Ver Roadmap" src="https://img.shields.io/badge/Ver-Roadmap%20Fase%202-0f172a?style=for-the-badge"></a>
+	<a href="./Fase%202/IMPLEMENTACION_Y_ROADMAP.md"><img alt="Plan de Implementacion" src="https://img.shields.io/badge/Plan-Implementacion%20Enterprise-10b981?style=for-the-badge"></a>
+	<a href="./README.md#quickstart"><img alt="Probar Ahora" src="https://img.shields.io/badge/Probar-Ahora-2563eb?style=for-the-badge"></a>
+</p>
 
 ---
 
